@@ -1,0 +1,119 @@
+# DeFi Challenge
+
+Answers
+  1. Prior to the London upgrade, it used the formula: Gas units (limit) * Gas price per unit.
+     Let's take for example, Alice had to pay Bob 1 ETH. In the transaction, the gas limit is 21,000 units, and the gas price is 200 gwei. So, the fees would have been:
+     21,000 * 200 = 4,200,000 gwei or 0.0042 ETH.
+     
+     But after the London upgrade, every block has a base fee, the minimum price per unit of gas for inclusion in this block, calculated by the network based on demand for block space.
+     Calculating the total transaction fee works as follows: Gas units (limit) * (Base fee + Tip).
+     Let's say Jordan has to pay Taylor 1 ETH. In the transaction, the gas limit is 21,000 units and the base fee is 100 gwei. Jordan includes a tip of 10 gwei.
+     Using the formula above we can calculate this as 21,000 * (100 + 10) = 2,310,000 gwei or 0.00231 ETH.
+		 
+	2. Data in storage are stored permanently. The storage is a key value store. Data in the storage are written in the blockchain, are available between function calls and transactions.
+		 Storage is very expensive to use. To occupy a 256 Bit slot costs 20,000 gas. Storage saves data in fields of 256 bit size (32 Byte = word).
+		 Cost occur for every used slot, even if it is not fully occupied.
+		 
+		 Memory is a byte array with slot sizes of 256 bit (32 byte). Here data are stored only during function execution. After that they are deleted. They are not saved to the blockchain.
+		 Due to its short term nature, memory is compared to storage cheap. Reading or writing a word (256 bit) costs 3 gas.
+		 
+		 The stack is an internal place where temporary variables are stored 32 bit slots.  It is usually used for value types in functions.
+		 The stack holds those variables which are necessary for immediate processing. It can comprise 1024 values but only the upper 16 ones are easily accessible.
+		 The cost for stack operations are usually lower than those for memory but in some cases can also be higher.
+		 
+	3. Modifiers let you wrap additional functionality to a method, so they're kind of like the decorator pattern in OOP. Modifiers are typically used in smart contracts to make sure 
+		 that certain conditions are met before proceeding to executing the rest of the body of code in the method.
+		 For example, isOwner is often used to make sure that the caller of the method is the owner of the contract:
+			modifier isOwner() {
+				 if (msg.sender != owner) {
+							throw;
+					}
+
+					_; // continue executing rest of method body
+			}
+
+			doSomething() isOwner {
+				// will first check if caller is owner
+
+				// code
+			}
+			
+	4. Interfaces are similar to abstract contracts and are created using interface keyword. Following are the key characteristics of an interface.
+			Interface can not have any function with implementation.
+			Functions of an interface can be only of type external.
+			Interface can not have constructor.
+			Interface can not have state variables.
+			Interface can have enum, structs which can be accessed using interface name dot notation.
+			
+			Let's take the following code for example:
+			pragma solidity ^0.5.0;
+
+			interface Calculator {
+				 function getResult() external view returns(uint);
+			}
+			contract Test is Calculator {
+				 constructor() public {}
+				 function getResult() external view returns(uint){
+						uint a = 1; 
+						uint b = 2;
+						uint result = a + b;
+						return result;
+				 }
+			}
+			
+			It will output to:
+			0: uint256: 3
+			
+
+	5. The proxy contract uses a custom fallback function to redirect calls to other contract implementations. Whenever a contract A delegates a call to another contract B, 
+		 it executes the code of contract B in the context of contract A. This means that msg.value and msg.sender values will be kept and every storage modification will 
+		 impact the storage of contract A.
+			[assembly {
+					let ptr := mload(0x40)
+					calldatacopy(ptr, 0, calldatasize)
+					let result := delegatecall(gas, _impl, ptr, calldatasize, 0, 0)
+					let size := returndatasize
+					returndatacopy(ptr, 0, size)
+
+					switch result
+					case 0 { revert(ptr, size) }
+					default { return(ptr, size) }
+			 }
+			 
+	6. 
+pragma solidity ^0.5.0;
+	import 'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v2.5.0/contracts/token/ERC20/ERC20.sol';
+	contract Token is ERC20 {
+
+		address public owner;
+		string public name;
+		string public symbol;
+		uint8 public decimals;
+		bool public initialized = false;
+		
+		function initialize(
+		address _owner,
+		string calldata _name,
+		string calldata _symbol,
+		uint8 _decimals
+		) external {
+			require(initialized == true);
+			owner = _owner;
+			name = _name;
+			symbol = _symbol;
+			decimals = _decimals;
+			initialized = false;
+		}
+		
+		function setOwner(address _owner) external {
+			owner = _owner;
+		}
+		
+		function mint(address recipient, uint amount) external {
+			_mint(recipient, amount);
+		}
+		
+		function burn(address recipient, uint amount) external {
+			_burn(recipient, amount);
+		}
+	}
